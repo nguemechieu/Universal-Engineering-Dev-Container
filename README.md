@@ -35,7 +35,7 @@ Remove unneeded features or extensions for smaller builds. The feature-based SDK
 
 ## Validation status
 
-Configuration syntax and archive structure were checked. Docker image pulls, feature installation, container builds and runtime tests must be performed on a Docker-enabled machine. No production deployment or repository modification is included.
+Configuration syntax and archive structure were checked. Docker image pulls, feature installation, container builds and runtime tests must be performed on a Docker-enabled machine. No production deployment is included.
 
 ## Reusable image platform
 

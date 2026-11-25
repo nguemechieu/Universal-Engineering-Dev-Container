@@ -41,3 +41,33 @@ if [[ "$profile" == embedded ]]; then
   arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -c "$tmp/main.c" -o "$tmp/arm.o"
   avr-gcc -mmcu=atmega328p -c "$tmp/main.c" -o "$tmp/avr.o"
 fi
+if command -v python >/dev/null; then
+  python -c 'assert sum(range(5)) == 10'
+fi
+if command -v node >/dev/null; then
+  node -e 'if (2 + 2 !== 4) process.exit(1)'
+fi
+if command -v javac >/dev/null; then
+  printf 'class Main { public static void main(String[] args) { System.out.println("ok"); } }\n' > "$tmp/Main.java"
+  javac "$tmp/Main.java"
+  java -cp "$tmp" Main
+fi
+if command -v go >/dev/null; then
+  printf 'package main\nfunc main() {}\n' > "$tmp/main.go"
+  go build -o "$tmp/go-smoke" "$tmp/main.go"
+  "$tmp/go-smoke"
+fi
+if command -v rustc >/dev/null; then
+  printf 'fn main() {}\n' > "$tmp/main.rs"
+  rustc "$tmp/main.rs" -o "$tmp/rust-smoke"
+  "$tmp/rust-smoke"
+fi
+if command -v dotnet >/dev/null; then
+  dotnet new console --no-restore --output "$tmp/dotnet-smoke"
+  dotnet run --project "$tmp/dotnet-smoke"
+fi
+if [[ "$profile" == devops || "$profile" == universal ]]; then
+  printf 'terraform {}\n' > "$tmp/main.tf"
+  terraform -chdir="$tmp" validate
+  ansible localhost -i localhost, -c local -m ping
+fi
