@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /images
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /.devcontainer
+    schedule:
+      interval: weekly
+  - package-ecosystem: devcontainers
+    directories:
+      - /
+      - /profiles/universal
+      - /profiles/python
+      - /profiles/java
+      - /profiles/web
+      - /profiles/cpp
+      - /profiles/dotnet
+      - /profiles/go
+      - /profiles/rust
+      - /profiles/devops
+      - /profiles/fintech
+      - /profiles/ai
+      - /profiles/embedded
+    schedule:
+      interval: weekly

@@ -1,0 +1,24 @@
+{
+  "name": "Engineering: go",
+  "build": {
+    "dockerfile": "../../../images/Dockerfile",
+    "context": "../../../images",
+    "args": {
+      "PROFILE": "base"
+    }
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.24"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}

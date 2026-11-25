@@ -1,0 +1,24 @@
+{
+  "name": "Engineering: rust",
+  "build": {
+    "dockerfile": "../../../images/Dockerfile",
+    "context": "../../../images",
+    "args": {
+      "PROFILE": "base"
+    }
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}

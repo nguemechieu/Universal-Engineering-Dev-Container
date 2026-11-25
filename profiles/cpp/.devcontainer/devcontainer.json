@@ -1,0 +1,20 @@
+{
+  "name": "Engineering: cpp",
+  "build": {
+    "dockerfile": "../../../images/Dockerfile",
+    "context": "../../../images",
+    "args": {
+      "PROFILE": "base"
+    }
+  },
+  "remoteUser": "vscode",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}
