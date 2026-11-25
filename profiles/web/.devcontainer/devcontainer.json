@@ -1,0 +1,25 @@
+{
+  "name": "Engineering: web",
+  "build": {
+    "dockerfile": "../../../images/Dockerfile",
+    "context": "../../../images",
+    "args": {
+      "PROFILE": "base"
+    }
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  }
+}

@@ -1,0 +1,66 @@
+name: Validate engineering images
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+  schedule:
+    - cron: '23 5 * * 1'
+permissions:
+  contents: read
+jobs:
+  profiles:
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [universal, python, java, web, cpp, dotnet, go, rust, devops, fintech, ai, embedded]
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install -g @devcontainers/cli@0.82.0
+      - uses: docker/setup-buildx-action@v3
+      - name: Build feature-enabled image
+        env:
+          PROFILE: ${{ matrix.profile }}
+        run: devcontainer build --workspace-folder "profiles/$PROFILE" --image-name "engineering:$PROFILE"
+      - name: Smoke test image as non-root user
+        env:
+          PROFILE: ${{ matrix.profile }}
+        run: docker run --rm --user vscode -v "$PWD/scripts:/checks:ro" "engineering:$PROFILE" bash -lc "bash /checks/smoke.sh '$PROFILE'"
+      - name: Scan built image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: engineering:${{ matrix.profile }}
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+  integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install -g @devcontainers/cli@0.82.0
+      - name: Check source configuration
+        run: |
+          python -m json.tool .devcontainer/devcontainer.json >/dev/null
+          for f in profiles/*/.devcontainer/devcontainer.json; do python -m json.tool "$f" >/dev/null; done
+          bash -n scripts/smoke.sh
+          bash -n .devcontainer/check.sh
+          docker compose -f .devcontainer/compose.yaml config -q
+      - name: Start existing workspace and services
+        run: devcontainer up --workspace-folder .
+      - name: Verify SDKs and services
+        run: devcontainer exec --workspace-folder . bash .devcontainer/check.sh

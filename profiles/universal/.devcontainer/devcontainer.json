@@ -1,0 +1,60 @@
+{
+  "name": "Engineering: universal",
+  "build": {
+    "dockerfile": "../../../images/Dockerfile",
+    "context": "../../../images",
+    "args": {
+      "PROFILE": "universal"
+    }
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installMaven": true,
+      "installGradle": true
+    },
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "8.0"
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.24"
+    },
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/terraform:1": {},
+    "ghcr.io/devcontainers/features/aws-cli:1": {},
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "installMinikube": false
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "vscjava.vscode-java-pack",
+        "ms-dotnettools.csdevkit",
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "golang.go",
+        "rust-lang.rust-analyzer",
+        "hashicorp.terraform",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bmewburn.vscode-intelephense-client"
+      ]
+    }
+  }
+}

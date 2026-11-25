@@ -1,0 +1,88 @@
+name: Release versioned engineering images
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require release commit on master
+        run: git merge-base --is-ancestor HEAD origin/master
+      - name: Validate stable SemVer
+        run: '[[ "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]'
+  build:
+    needs: version
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [universal, python, java, web, cpp, dotnet, go, rust, devops, fintech, ai, embedded]
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install -g @devcontainers/cli@0.82.0
+      - uses: docker/setup-buildx-action@v3
+      - name: Build feature-enabled image
+        env:
+          PROFILE: ${{ matrix.profile }}
+        run: devcontainer build --workspace-folder "profiles/$PROFILE" --image-name "engineering:$PROFILE"
+      - name: Smoke test image as non-root user
+        env:
+          PROFILE: ${{ matrix.profile }}
+        run: docker run --rm --user vscode -v "$PWD/scripts:/checks:ro" "engineering:$PROFILE" bash -lc "bash /checks/smoke.sh '$PROFILE'"
+      - name: Scan built image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: engineering:${{ matrix.profile }}
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+      - name: Authenticate to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: Push tested architecture image
+        env:
+          PROFILE: ${{ matrix.profile }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          case "$(uname -m)" in x86_64) arch=amd64;; aarch64) arch=arm64;; *) exit 1;; esac
+          tag="$image:$PROFILE-${GITHUB_REF_NAME#v}-$arch"
+          docker tag "engineering:$PROFILE" "$tag"
+          docker push "$tag"
+  manifest:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: docker/setup-buildx-action@v3
+      - name: Authenticate to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: Publish multi-architecture version tags
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          for profile in universal python java web cpp dotnet go rust devops fintech ai embedded; do
+            tag="$image:$profile-${GITHUB_REF_NAME#v}"
+            docker buildx imagetools create -t "$tag" "$tag-amd64" "$tag-arm64"
+            docker buildx imagetools inspect "$tag"
+          done

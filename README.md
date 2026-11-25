@@ -35,4 +35,8 @@ Remove unneeded features or extensions for smaller builds. The feature-based SDK
 
 ## Validation status
 
-Configuration syntax and archive structure were checked. Docker image pulls, feature installation, container builds and runtime tests must be performed on a Docker-enabled machine. No production deployment or repository modification is included.
+Configuration syntax and archive structure were checked. Docker image pulls, feature installation, container builds and runtime tests must be performed on a Docker-enabled machine. No production deployment is included.
+
+## Reusable image platform
+
+See [profiles, builds, release workflow and security guidance](docs/platform.md). The original workspace is preserved. GitHub Actions validates images and publishes stable version tags when a release tag is pushed; no image is published by opening a pull request.
